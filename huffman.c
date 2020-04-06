@@ -38,7 +38,7 @@ struct MinHeap {
 struct MinHeapNode* newNode(char data, unsigned freq) {
     struct MinHeapNode *temp = (struct MinHeapNode*)malloc(sizeof(struct MinHeapNode));
 
-    temp->left = temp->right;
+    temp->left = temp->right = NULL;
     temp->data = data;
     temp->freq = freq;
 
@@ -197,7 +197,7 @@ void storeCodes(struct MinHeapNode *root, int *arr, int top) {
     }
 }
 
-struct minHeapNode* traverseToNode(char character, struct MinHeapNode *root, int arr[], int top) {
+void traverseToNode(char character, struct MinHeapNode *root, int arr[], int top) {
     if (root->left) {
         arr[top] = 0;
         traverseToNode(character, root->left, arr, top + 1);
@@ -214,11 +214,9 @@ struct minHeapNode* traverseToNode(char character, struct MinHeapNode *root, int
 }
 
 struct MinHeapNode* applyCompression(char data[], int freq[], int size) {
-    printf("test checkpoint1\n");
 
     // Step 1: Call buildHuffmanTree and store root
     struct MinHeapNode *root = buildHuffmanTree(data, freq, size);
-    printf("test checkpoint2\n");
     // Step 2: Call storeCodes with appropriate parameters
     int arr[100];
     int top = 0;
@@ -232,17 +230,26 @@ void resetArray(int array[], int size) {
     }
 }
 
-int main () {
+int main (int argc, char **argv) {
 
     char data[2500];
     int freq[2500];
     int currentChar = 0;
     char input[2000];
     int charFound;
+
+    FILE *textInput;
+    int error;
     
     // Step 1: Traverse txt file and store each unique character in data array
     //         and store number of occurences in freq array
-    while (scanf("%2000s", input) != EOF) {
+
+    textInput = fopen(argv[1], "r");
+    if (textInput == NULL) {
+        fprintf(stderr, "Error opening original file\n");
+    }
+
+    while (fscanf(textInput, "%2000s", input) != EOF) {
         for (int i = 0; i < strlen(input); i ++) {
             charFound = -1;
             for (int y = 0; y < currentChar; y ++) {
@@ -261,14 +268,29 @@ int main () {
         }
     }
 
+    error = fclose(textInput);
+    if (error != 0) {
+        fprintf(stderr, "fclose on first file failed\n");
+    }
+
     // Step 3: Call apply compression with appropriate parameters
     struct MinHeapNode *root = applyCompression(data, freq, currentChar);
+    
 
-    int array[100] = malloc(sizeof(int) * 100);
+    FILE *textInput2;
+    int error2;
+
+    int array[100];
     int top = 0;
 
     // Step 4: Reiterate over input text and output respective codes
-    while (scanf("%2000s", input) != EOF) {
+
+    textInput2 = fopen(argv[1], "r");
+    if (textInput2 == NULL) {
+        fprintf(stderr, "Error opening second file\n");
+    }
+
+    while (fscanf(textInput2, "%2000s", input) != EOF) {
         for (int i = 0; i < strlen(input); i ++) {
             resetArray(array, 100);
             top = 0;
@@ -277,6 +299,11 @@ int main () {
 
         }
         printf("\n");
+    }
+
+    error2 = fclose(textInput2);
+    if (error2 != 0) {
+        fprintf(stderr, "fclose on second file failed\n");
     }
 
     return 0;
