@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-void writeBit (int bit, FILE *outputFile, unsigned char *bitBuffer, int *currentBit);
-
 struct MinHeapNode {
 
     // One of the chars in the input
@@ -17,7 +15,7 @@ struct MinHeapNode {
     unsigned freq;
 
     // huffman code
-    char code[8];
+    char code[16];
 
     // Left child of this node
     struct MinHeapNode *left;
@@ -183,7 +181,7 @@ struct MinHeapNode* buildHuffmanTree(char data[], int freq[], int size) {
     return extractMin(minHeap); 
 }
 
-void storeCodes(struct MinHeapNode *root, int arr[], int top) {
+void storeCodes(struct MinHeapNode *root, int *arr, int top) {
     if (root->left) {
         arr[top] = 0;
         storeCodes(root->left, arr, top + 1);
@@ -193,55 +191,37 @@ void storeCodes(struct MinHeapNode *root, int arr[], int top) {
         arr[top] = 1;
         storeCodes(root->right, arr, top + 1);
     }
-
+    
     if (isLeaf(root)) {
         storeCode(root, arr, top);
     }
 }
 
-void traverseToNode(int *currentBit, unsigned char *bitBuffer, FILE *outputFile, char character, struct MinHeapNode *root, int arr[], int top) {
+void traverseToNode(FILE *outputFile, char character, struct MinHeapNode *root, int arr[], int top) {
     if (root->left) {
         arr[top] = 0;
-        traverseToNode(currentBit, bitBuffer, outputFile, character, root->left, arr, top + 1);
+        traverseToNode(outputFile, character, root->left, arr, top + 1);
     }
 
     if (root->right) {
         arr[top] = 1;
-        traverseToNode(currentBit, bitBuffer, outputFile, character, root->right, arr, top + 1);
+        traverseToNode(outputFile, character, root->right, arr, top + 1);
     }
     if (root->data == character) {
-        for (int i = 0; i < strlen(root->code); i++) {
-            if (root->code[i] == '1') {
-                *bitBuffer |= (1<<*currentBit);
-                *currentBit++;
-                if (*currentBit == 8) {
-                    fwrite(bitBuffer, 1, 1, outputFile);
-                    *currentBit = 0;
-                    *bitBuffer = 0;
-                }
-            }
-            else {
-                *currentBit++;
-                if (*currentBit == 8) {
-                    fwrite(bitBuffer, 1, 1, outputFile);
-                    *currentBit = 0;
-                    *bitBuffer = 0;
-                }
-            }
-        }
+        fprintf(outputFile, "%d", atoi(root->code));
     }
 }
 
 struct MinHeapNode* applyCompression(char data[], int freq[], int size) {
+    printf("test checkpoint1\n");
 
     // Step 1: Call buildHuffmanTree and store root
     struct MinHeapNode *root = buildHuffmanTree(data, freq, size);
-
+    printf("test checkpoint2\n");
     // Step 2: Call storeCodes with appropriate parameters
-    int arr[100];
+    int *arr = malloc(sizeof(int) * 100);
     int top = 0;
     storeCodes(root, arr, top);
-
     return root;
 }
 
@@ -251,6 +231,7 @@ void resetArray(int array[], int size) {
     }
 }
 
+/*
 void writeBit (int bit, FILE *outputFile, unsigned char *bitBuffer, int *currentBit) {
     if (bit) {
         *bitBuffer |= (1<<*currentBit);
@@ -263,6 +244,7 @@ void writeBit (int bit, FILE *outputFile, unsigned char *bitBuffer, int *current
         *bitBuffer = 0;
     }
 }
+*/
 
 int main (int argc, char **argv) {
 
@@ -305,11 +287,10 @@ int main (int argc, char **argv) {
         fprintf(stderr, "fclose failed\n");
     }
     
-    
+    printf("test checkpoint\n");
+
     // Step 3: Call apply compression with appropriate parameters
     struct MinHeapNode *root = applyCompression(data, freq, currentChar);
-
-    printf("test1");
 
     int array[100] = {0};
     int top = 0;
@@ -318,13 +299,13 @@ int main (int argc, char **argv) {
     FILE *textFile2;
     int error2;
     
-    int *currentBit = malloc(sizeof(int));
-    unsigned char *bitBuffer = malloc(sizeof(unsigned char));
+    //int *currentBit = malloc(sizeof(int));
+    //unsigned char *bitBuffer = malloc(sizeof(unsigned char));
 
     FILE *outputFile;
     int error3;
 
-    outputFile = fopen("output.bin", "wb");
+    outputFile = fopen("output.txt", "w");
     if (outputFile == NULL) {
         fprintf(stderr, "Error opening writing file\n");
     }
@@ -338,14 +319,8 @@ int main (int argc, char **argv) {
         for (int i = 0; i < strlen(input); i ++) {
             resetArray(array, 100);
             top = 0;
-            traverseToNode(currentBit, bitBuffer, outputFile, input[i], root, array, top);
+            traverseToNode(outputFile, input[i], root, array, top);
 
-        }
-    }
-
-    if (*currentBit != 0) {
-        while (*currentBit) {
-            writeBit(0, outputFile, bitBuffer, currentBit);
         }
     }
 
