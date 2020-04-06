@@ -197,19 +197,19 @@ void storeCodes(struct MinHeapNode *root, int *arr, int top) {
     }
 }
 
-void traverseToNode(FILE *outputFile, char character, struct MinHeapNode *root, int arr[], int top) {
+struct minHeapNode* traverseToNode(char character, struct MinHeapNode *root, int arr[], int top) {
     if (root->left) {
         arr[top] = 0;
-        traverseToNode(outputFile, character, root->left, arr, top + 1);
+        traverseToNode(character, root->left, arr, top + 1);
     }
 
     if (root->right) {
         arr[top] = 1;
-        traverseToNode(outputFile, character, root->right, arr, top + 1);
+        traverseToNode(character, root->right, arr, top + 1);
     }
 
     if (root->data == character) {
-        fprintf(outputFile, "%s", root->code);
+        printf("%s", root->code);
     }
 }
 
@@ -220,7 +220,7 @@ struct MinHeapNode* applyCompression(char data[], int freq[], int size) {
     struct MinHeapNode *root = buildHuffmanTree(data, freq, size);
     printf("test checkpoint2\n");
     // Step 2: Call storeCodes with appropriate parameters
-    int *arr = malloc(sizeof(int) * 100);
+    int arr[100];
     int top = 0;
     storeCodes(root, arr, top);
     return root;
@@ -232,25 +232,17 @@ void resetArray(int array[], int size) {
     }
 }
 
-int main (int argc, char **argv) {
+int main () {
 
     char data[2500];
     int freq[2500];
     int currentChar = 0;
     char input[2000];
     int charFound;
-
+    
     // Step 1: Traverse txt file and store each unique character in data array
     //         and store number of occurences in freq array
-    FILE *textFile;
-    int error;
-
-    textFile = fopen(argv[1], "r");
-    if (textFile == NULL) {
-        fprintf(stderr, "Error opening file\n");
-    }
-
-    while (fscanf(textFile, "%100s", input) != EOF) {
+    while (scanf("%2000s", input) != EOF) {
         for (int i = 0; i < strlen(input); i ++) {
             charFound = -1;
             for (int y = 0; y < currentChar; y ++) {
@@ -269,52 +261,22 @@ int main (int argc, char **argv) {
         }
     }
 
-    error = fclose(textFile);
-    if (error != 0) {
-        fprintf(stderr, "fclose failed\n");
-    }
-    
-
     // Step 3: Call apply compression with appropriate parameters
     struct MinHeapNode *root = applyCompression(data, freq, currentChar);
 
-    int array[100] = {0};
+    int array[100] = malloc(sizeof(int) * 100);
     int top = 0;
 
     // Step 4: Reiterate over input text and output respective codes
-    FILE *textFile2;
-    int error2;
-
-    FILE *outputFile;
-    int error3;
-
-    outputFile = fopen("output.zip", "w");
-    if (outputFile == NULL) {
-        fprintf(stderr, "Error opening writing file\n");
-    }
-
-    textFile2 = fopen(argv[1], "r");
-    if (textFile2 == NULL) {
-        fprintf(stderr, "Error opening file2\n");
-    }
-
-    while (fscanf(textFile2, "%100s", input) != EOF) {
+    while (scanf("%2000s", input) != EOF) {
         for (int i = 0; i < strlen(input); i ++) {
             resetArray(array, 100);
             top = 0;
-            traverseToNode(outputFile, input[i], root, array, top);
+
+            traverseToNode(input[i], root, array, top);
 
         }
-    }
-
-    error3 = fclose(outputFile);
-    if (error3 != 0) {
-        fprintf(stderr, "fclose for writing file failed\n");
-    }
-
-    error2 = fclose(textFile2);
-    if (error2 != 0) {
-        fprintf(stderr, "fclose failed2\n");
+        printf("\n");
     }
 
     return 0;
