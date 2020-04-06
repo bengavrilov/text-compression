@@ -207,8 +207,9 @@ void traverseToNode(FILE *outputFile, char character, struct MinHeapNode *root, 
         arr[top] = 1;
         traverseToNode(outputFile, character, root->right, arr, top + 1);
     }
+
     if (root->data == character) {
-        fprintf(outputFile, "%d", atoi(root->code));
+        fprintf(outputFile, "%s", root->code);
     }
 }
 
@@ -231,21 +232,6 @@ void resetArray(int array[], int size) {
     }
 }
 
-/*
-void writeBit (int bit, FILE *outputFile, unsigned char *bitBuffer, int *currentBit) {
-    if (bit) {
-        *bitBuffer |= (1<<*currentBit);
-    }
-
-    *currentBit++;
-    if (*currentBit == 8) {
-        fwrite(bitBuffer, 1, 1, outputFile);
-        *currentBit = 0;
-        *bitBuffer = 0;
-    }
-}
-*/
-
 int main (int argc, char **argv) {
 
     char data[2500];
@@ -253,6 +239,7 @@ int main (int argc, char **argv) {
     int currentChar = 0;
     char input[2000];
     int charFound;
+
     // Step 1: Traverse txt file and store each unique character in data array
     //         and store number of occurences in freq array
     FILE *textFile;
@@ -287,25 +274,21 @@ int main (int argc, char **argv) {
         fprintf(stderr, "fclose failed\n");
     }
     
-    printf("test checkpoint\n");
 
     // Step 3: Call apply compression with appropriate parameters
     struct MinHeapNode *root = applyCompression(data, freq, currentChar);
 
     int array[100] = {0};
     int top = 0;
-    
+
     // Step 4: Reiterate over input text and output respective codes
     FILE *textFile2;
     int error2;
-    
-    //int *currentBit = malloc(sizeof(int));
-    //unsigned char *bitBuffer = malloc(sizeof(unsigned char));
 
     FILE *outputFile;
     int error3;
 
-    outputFile = fopen("output.txt", "w");
+    outputFile = fopen("output.zip", "w");
     if (outputFile == NULL) {
         fprintf(stderr, "Error opening writing file\n");
     }
