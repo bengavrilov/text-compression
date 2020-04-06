@@ -306,5 +306,15 @@ int main (int argc, char **argv) {
         fprintf(stderr, "fclose on second file failed\n");
     }
 
+    // print encoding protocol
+
+    for (int i = 0; i < currentChar; i++) {
+        resetArray(array, 100);
+        top = 0;
+        printf("%c: ", data[i]);
+        traverseToNode(data[i], root, array, top);
+        printf("\n");
+    }
+
     return 0;
 }
