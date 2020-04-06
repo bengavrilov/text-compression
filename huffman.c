@@ -197,19 +197,20 @@ void storeCodes(struct MinHeapNode *root, int *arr, int top) {
     }
 }
 
-void traverseToNode(char character, struct MinHeapNode *root, int arr[], int top) {
+void traverseToNode(FILE *outputFile, char character, struct MinHeapNode *root, int arr[], int top) {
     if (root->left) {
         arr[top] = 0;
-        traverseToNode(character, root->left, arr, top + 1);
+        traverseToNode(outputFile, character, root->left, arr, top + 1);
     }
 
     if (root->right) {
         arr[top] = 1;
-        traverseToNode(character, root->right, arr, top + 1);
+        traverseToNode(outputFile, character, root->right, arr, top + 1);
     }
 
     if (root->data == character) {
-        printf("%s", root->code);
+        //printf("%s", root->code);
+        fprintf(outputFile, "%s", root->code);
     }
 }
 
@@ -276,12 +277,36 @@ int main (int argc, char **argv) {
     // Step 3: Call apply compression with appropriate parameters
     struct MinHeapNode *root = applyCompression(data, freq, currentChar);
     
+    int array[100];
+    int top = 0;
+
+    // Open writing file
+
+    FILE *outputFile;
+    int error3;
+
+    outputFile = fopen("output.txt", "w");
+    if (outputFile == NULL) {
+        fprintf(stderr, "Error opening writing file\n");
+    }
+
+    // print encoding protocol
+
+    for (int i = 0; i < currentChar; i++) {
+        resetArray(array, 100);
+        top = 0;
+        //printf("%c: ", data[i]);
+        traverseToNode(outputFile, data[i], root, array, top);
+        fprintf(outputFile, "\n");
+    }
+
+    // write delimiter to separate protocol and content
+    fprintf(outputFile, "\n");
+    fprintf(outputFile, "00000000\n");
+    fprintf(outputFile, "\n");
 
     FILE *textInput2;
     int error2;
-
-    int array[100];
-    int top = 0;
 
     // Step 4: Reiterate over input text and output respective codes
 
@@ -295,10 +320,10 @@ int main (int argc, char **argv) {
             resetArray(array, 100);
             top = 0;
 
-            traverseToNode(input[i], root, array, top);
+            traverseToNode(outputFile, input[i], root, array, top);
 
         }
-        printf("\n");
+        fprintf(outputFile, "\n");
     }
 
     error2 = fclose(textInput2);
@@ -306,14 +331,9 @@ int main (int argc, char **argv) {
         fprintf(stderr, "fclose on second file failed\n");
     }
 
-    // print encoding protocol
-
-    for (int i = 0; i < currentChar; i++) {
-        resetArray(array, 100);
-        top = 0;
-        printf("%c: ", data[i]);
-        traverseToNode(data[i], root, array, top);
-        printf("\n");
+    error3 = fclose(outputFile);
+    if (error3 != 0) {
+        fprintf(stderr, "fclose failed on writing file\n");
     }
 
     return 0;
