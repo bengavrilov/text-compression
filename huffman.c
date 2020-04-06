@@ -209,7 +209,6 @@ void traverseToNode(FILE *outputFile, char character, struct MinHeapNode *root, 
     }
 
     if (root->data == character) {
-        //printf("%s", root->code);
         fprintf(outputFile, "%s", root->code);
     }
 }
@@ -295,18 +294,18 @@ int main (int argc, char **argv) {
     for (int i = 0; i < currentChar; i++) {
         resetArray(array, 100);
         top = 0;
-        //printf("%c: ", data[i]);
+        fprintf(outputFile, "%c ", data[i]);
         traverseToNode(outputFile, data[i], root, array, top);
         fprintf(outputFile, "\n");
     }
 
     // write delimiter to separate protocol and content
     fprintf(outputFile, "\n");
-    fprintf(outputFile, "00000000\n");
-    fprintf(outputFile, "\n");
 
     FILE *textInput2;
     int error2;
+
+    char newLine;
 
     // Step 4: Reiterate over input text and output respective codes
 
@@ -315,7 +314,7 @@ int main (int argc, char **argv) {
         fprintf(stderr, "Error opening second file\n");
     }
 
-    while (fscanf(textInput2, "%2000s", input) != EOF) {
+    while (fscanf(textInput2, "%2000s%c", input, &newLine) != EOF) {
         for (int i = 0; i < strlen(input); i ++) {
             resetArray(array, 100);
             top = 0;
@@ -323,7 +322,9 @@ int main (int argc, char **argv) {
             traverseToNode(outputFile, input[i], root, array, top);
 
         }
-        fprintf(outputFile, "\n");
+        if (newLine == '\n') {
+            fprintf(outputFile, "\n");
+        }
     }
 
     error2 = fclose(textInput2);
@@ -334,6 +335,52 @@ int main (int argc, char **argv) {
     error3 = fclose(outputFile);
     if (error3 != 0) {
         fprintf(stderr, "fclose failed on writing file\n");
+    }
+
+    // Decode encoded file and output to screen
+    char data2[2500];
+    char *code[2500];
+
+    FILE *encodedFile;
+    int error4;
+
+    encodedFile = fopen("output.txt", "r");
+    if (encodedFile == NULL) {
+        fprintf(stderr, "fopen failed opening encoded file\n");
+    }
+
+    int protocolsRead = 0;
+    char singleCode[8];
+
+    while (fscanf(encodedFile, "%s", input) != EOF) {
+        printf("testing");
+        if (protocolsRead < currentChar) {
+            if (strlen(&data2[protocolsRead]) == 0) {
+                data2[protocolsRead] = input[0];
+            }
+            else {
+                strcpy(code[protocolsRead], input);
+                protocolsRead++;
+            }
+        }
+        else {
+            for (int i = 0; i < strlen(input); i++) {
+                strncat(singleCode, &input[i], 1);
+                for (int y = 0; y < currentChar; y++) {
+                    if (strcmp(singleCode, code[y]) == 0) {
+                        printf("%c", data2[y]);
+                        strcat(singleCode, "");
+                        break;
+                    }
+                }
+            }
+            printf("\n");
+        }
+    }
+
+    error4 = fclose(encodedFile);
+    if (error4 != 0) {
+        fprintf(stderr, "fclose failed on encoded file\n");
     }
 
     return 0;
