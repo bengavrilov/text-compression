@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+void writeBit (int bit, FILE *outputFile, unsigned char *bitBuffer, int *currentBit);
+
 struct MinHeapNode {
 
     // One of the chars in the input
@@ -15,7 +17,7 @@ struct MinHeapNode {
     unsigned freq;
 
     // huffman code
-    char code[16];
+    char code[8];
 
     // Left child of this node
     struct MinHeapNode *left;
@@ -197,19 +199,36 @@ void storeCodes(struct MinHeapNode *root, int arr[], int top) {
     }
 }
 
-void traverseToNode(FILE *outputFile, char character, struct MinHeapNode *root, int arr[], int top) {
+void traverseToNode(int *currentBit, unsigned char *bitBuffer, FILE *outputFile, char character, struct MinHeapNode *root, int arr[], int top) {
     if (root->left) {
         arr[top] = 0;
-        traverseToNode(outputFile, character, root->left, arr, top + 1);
+        traverseToNode(currentBit, bitBuffer, outputFile, character, root->left, arr, top + 1);
     }
 
     if (root->right) {
         arr[top] = 1;
-        traverseToNode(outputFile, character, root->right, arr, top + 1);
+        traverseToNode(currentBit, bitBuffer, outputFile, character, root->right, arr, top + 1);
     }
-
     if (root->data == character) {
-        fprintf(outputFile, "%s", root->code);
+        for (int i = 0; i < strlen(root->code); i++) {
+            if (root->code[i] == '1') {
+                *bitBuffer |= (1<<*currentBit);
+                *currentBit++;
+                if (*currentBit == 8) {
+                    fwrite(bitBuffer, 1, 1, outputFile);
+                    *currentBit = 0;
+                    *bitBuffer = 0;
+                }
+            }
+            else {
+                *currentBit++;
+                if (*currentBit == 8) {
+                    fwrite(bitBuffer, 1, 1, outputFile);
+                    *currentBit = 0;
+                    *bitBuffer = 0;
+                }
+            }
+        }
     }
 }
 
@@ -232,6 +251,19 @@ void resetArray(int array[], int size) {
     }
 }
 
+void writeBit (int bit, FILE *outputFile, unsigned char *bitBuffer, int *currentBit) {
+    if (bit) {
+        *bitBuffer |= (1<<*currentBit);
+    }
+
+    *currentBit++;
+    if (*currentBit == 8) {
+        fwrite(bitBuffer, 1, 1, outputFile);
+        *currentBit = 0;
+        *bitBuffer = 0;
+    }
+}
+
 int main (int argc, char **argv) {
 
     char data[2500];
@@ -239,7 +271,6 @@ int main (int argc, char **argv) {
     int currentChar = 0;
     char input[2000];
     int charFound;
-
     // Step 1: Traverse txt file and store each unique character in data array
     //         and store number of occurences in freq array
     FILE *textFile;
@@ -274,21 +305,26 @@ int main (int argc, char **argv) {
         fprintf(stderr, "fclose failed\n");
     }
     
-
+    
     // Step 3: Call apply compression with appropriate parameters
     struct MinHeapNode *root = applyCompression(data, freq, currentChar);
 
+    printf("test1");
+
     int array[100] = {0};
     int top = 0;
-
+    
     // Step 4: Reiterate over input text and output respective codes
     FILE *textFile2;
     int error2;
+    
+    int *currentBit = malloc(sizeof(int));
+    unsigned char *bitBuffer = malloc(sizeof(unsigned char));
 
     FILE *outputFile;
     int error3;
 
-    outputFile = fopen("output.zip", "w");
+    outputFile = fopen("output.bin", "wb");
     if (outputFile == NULL) {
         fprintf(stderr, "Error opening writing file\n");
     }
@@ -302,9 +338,14 @@ int main (int argc, char **argv) {
         for (int i = 0; i < strlen(input); i ++) {
             resetArray(array, 100);
             top = 0;
+            traverseToNode(currentBit, bitBuffer, outputFile, input[i], root, array, top);
 
-            traverseToNode(outputFile, input[i], root, array, top);
+        }
+    }
 
+    if (*currentBit != 0) {
+        while (*currentBit) {
+            writeBit(0, outputFile, bitBuffer, currentBit);
         }
     }
 
