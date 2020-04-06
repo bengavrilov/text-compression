@@ -14,6 +14,9 @@ struct MinHeapNode {
     // Frequency of the char
     unsigned freq;
 
+    // huffman code
+    char code[16];
+
     // Left child of this node
     struct MinHeapNode *left;
     // Right child of thise node
@@ -71,8 +74,7 @@ void minHeapify(struct MinHeap *minHeap, int idx) {
         smallest = right; 
   
     if (smallest != idx) { 
-        swapMinHeapNode(&minHeap->array[smallest], 
-                        &minHeap->array[idx]); 
+        swapMinHeapNode(&minHeap->array[smallest], &minHeap->array[idx]); 
         minHeapify(minHeap, smallest); 
     } 
 }
@@ -134,6 +136,13 @@ struct MinHeap* createAndBuildMinHeap(char data[], int freq[], int size) {
     return minHeap; 
 }
 
+void storeCode (struct MinHeapNode* node, int arr[], int n) {
+    
+    for (int i = 0; i < n; i++) {
+        sprintf(node->code + i, "%d", arr[i]);
+    }
+}
+
 struct MinHeapNode* buildHuffmanTree(char data[], int freq[], int size) { 
     struct MinHeapNode *left;
     struct MinHeapNode *right;
@@ -171,3 +180,21 @@ struct MinHeapNode* buildHuffmanTree(char data[], int freq[], int size) {
     // root node and the tree is complete. 
     return extractMin(minHeap); 
 }
+
+void encode(struct MinHeapNode *root, int arr[], int top) {
+    if (root->left) {
+        arr[top] = 0;
+        encode(root->left, arr, top + 1);
+    }
+
+    if (root->right) {
+        arr[top] = 1;
+        encode(root->right, arr, top + 1);
+    }
+
+    if (isLeaf(root)) {
+        storeCode(root, arr, top);
+    }
+}
+
+void 
