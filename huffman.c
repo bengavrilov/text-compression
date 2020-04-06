@@ -181,15 +181,15 @@ struct MinHeapNode* buildHuffmanTree(char data[], int freq[], int size) {
     return extractMin(minHeap); 
 }
 
-void encode(struct MinHeapNode *root, int arr[], int top) {
+void storeCodes(struct MinHeapNode *root, int arr[], int top) {
     if (root->left) {
         arr[top] = 0;
-        encode(root->left, arr, top + 1);
+        storeCodes(root->left, arr, top + 1);
     }
 
     if (root->right) {
         arr[top] = 1;
-        encode(root->right, arr, top + 1);
+        storeCodes(root->right, arr, top + 1);
     }
 
     if (isLeaf(root)) {
@@ -197,4 +197,87 @@ void encode(struct MinHeapNode *root, int arr[], int top) {
     }
 }
 
-void 
+struct minHeapNode* traverseToNode(char character, struct MinHeapNode *root, int arr[], int top) {
+    if (root->left) {
+        arr[top] = 0;
+        traverseToNode(character, root->left, arr, top + 1);
+    }
+
+    if (root->right) {
+        arr[top] = 1;
+        traverseToNode(character, root->right, arr, top + 1);
+    }
+
+    if (root->data == character) {
+        printf("%s", root->code);
+    }
+}
+
+struct MinHeapNode* applyCompression(char data[], int freq[], int size) {
+
+    // Step 1: Call buildHuffmanTree and store root
+    struct MinHeapNode *root = buildHuffmanTree(data, freq, size);
+
+    // Step 2: Call storeCodes with appropriate parameters
+    int arr[100] = malloc(sizeof(int) * 100);
+    int top = 0;
+    storeCodes(root, arr, top);
+
+    return root;
+}
+
+void resetArray(int array[], int size) {
+    for (int i = 0; i < size; i++) {
+        array[i] = 0;
+    }
+}
+
+int main () {
+
+    char data[2500];
+    int freq[2500];
+    int currentChar = 0;
+    char input[2000];
+    int charFound;
+    
+    // Step 1: Traverse txt file and store each unique character in data array
+    //         and store number of occurences in freq array
+    while (scanf("%2000s", input) != EOF) {
+        for (int i = 0; i < strlen(input); i ++) {
+            charFound = -1;
+            for (int y = 0; y < currentChar; y ++) {
+                if (data[y] == input[i]) {
+                    freq[y]++;
+                    charFound = 1;
+                    break;
+                }
+            }
+
+            if (charFound == -1) {
+                data[currentChar] = input[i];
+                freq[currentChar]++;
+                currentChar++;
+            }
+        }
+    }
+
+    // Step 3: Call apply compression with appropriate parameters
+    struct MinHeapNode *root = applyCompression(data, freq, currentChar);
+
+    int array[100] = malloc(sizeof(int) * 100);
+    int top = 0;
+
+    // Step 4: Reiterate over input text and output respective codes
+    while (scanf("%2000s", input) != EOF) {
+        for (int i = 0; i < strlen(input); i ++) {
+            resetArray(array, 100);
+            top = 0;
+
+            traverseToNode(input[i], root, array, top);
+
+        }
+        printf("\n");
+    }
+
+    return 0;
+}
