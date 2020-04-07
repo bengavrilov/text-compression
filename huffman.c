@@ -250,7 +250,7 @@ int main (int argc, char **argv) {
         fprintf(stderr, "Error opening original file\n");
     }
 
-    while (fscanf(textInput, "%2000s", input) != EOF) {
+    while (fscanf(textInput, "%10000s", input) != EOF) {
         for (int i = 0; i < strlen(input); i ++) {
             charFound = -1;
             for (int y = 0; y < currentChar; y ++) {
@@ -316,7 +316,7 @@ int main (int argc, char **argv) {
         fprintf(stderr, "Error opening second file\n");
     }
 
-    while (fscanf(textInput2, "%2000s%c", input, &newLine) != EOF) {
+    while (fscanf(textInput2, "%10000s%c", input, &newLine) != EOF) {
         for (int i = 0; i < strlen(input); i ++) {
             resetArray(array, 100);
             top = 0;
@@ -356,7 +356,7 @@ int main (int argc, char **argv) {
     int protocolsRead = 0;
     char singleCode[8];
 
-    while (fscanf(encodedFile, "%2000s", input) != EOF) {
+    while (fscanf(encodedFile, "%10000s", input) != EOF) {
         if (protocolsRead < currentChar) {
             if (strlen(&data2[protocolsRead]) == 0) {
                 data2[protocolsRead] = input[0];
