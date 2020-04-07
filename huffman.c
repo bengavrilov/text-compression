@@ -210,6 +210,7 @@ void traverseToNode(FILE *outputFile, char character, struct MinHeapNode *root, 
 
     if (root->data == character) {
         fprintf(outputFile, "%s", root->code);
+        printf("%c", root->data);
     }
 }
 
@@ -301,6 +302,7 @@ int main (int argc, char **argv) {
 
     // write delimiter to separate protocol and content
     fprintf(outputFile, "\n");
+    printf("\n");
 
     FILE *textInput2;
     int error2;
@@ -322,8 +324,10 @@ int main (int argc, char **argv) {
             traverseToNode(outputFile, input[i], root, array, top);
 
         }
+        printf(" ");
         if (newLine == '\n') {
             fprintf(outputFile, "\n");
+            printf("\n");
         }
     }
 
@@ -344,7 +348,7 @@ int main (int argc, char **argv) {
     FILE *encodedFile;
     int error4;
 
-    encodedFile = fopen("output.txt", "r");
+    encodedFile = fopen("decoded.txt", "r");
     if (encodedFile == NULL) {
         fprintf(stderr, "fopen failed opening encoded file\n");
     }
@@ -352,8 +356,7 @@ int main (int argc, char **argv) {
     int protocolsRead = 0;
     char singleCode[8];
 
-    while (fscanf(encodedFile, "%s", input) != EOF) {
-        printf("testing");
+    while (fscanf(encodedFile, "%2000s", input) != EOF) {
         if (protocolsRead < currentChar) {
             if (strlen(&data2[protocolsRead]) == 0) {
                 data2[protocolsRead] = input[0];
