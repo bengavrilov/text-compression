@@ -1,2 +1,3 @@
 # Text-Compression Program
-Program that takes in txt files and compresses them based on DEFLATE algorithm
+# Description #
+This program allows a user to upload a .txt file and compress it to a form thats on average ~30% smaller.
