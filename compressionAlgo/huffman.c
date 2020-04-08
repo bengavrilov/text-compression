@@ -351,7 +351,7 @@ int main (int argc, char **argv) {
 
     encodedFile = fopen("decoded.txt", "r");
     if (encodedFile == NULL) {
-        fprintf(stderr, "fopen failed opening encoded file\n");
+        //fprintf(stderr, "fopen failed opening encoded file\n");
     }
 
     int protocolsRead = 0;
@@ -384,7 +384,7 @@ int main (int argc, char **argv) {
 
     error4 = fclose(encodedFile);
     if (error4 != 0) {
-        fprintf(stderr, "fclose failed on encoded file\n");
+        //fprintf(stderr, "fclose failed on encoded file\n");
     }
 
     return 0;
