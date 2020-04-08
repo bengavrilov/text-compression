@@ -12,6 +12,7 @@ struct MinHeapNode {
     char data;
 
     // Frequency of the char
+    
     unsigned freq;
 
     // huffman code
